@@ -65,14 +65,23 @@ for link in links:
     if '.csv' or '.xls' in link['href']:
         url = link['href']
         csvfile = link.text.strip().split('_')
+        if '2015' in csvfile[1]:
+            csvYr = '2015'
+        if 'Q1' in csvfile[0]:
+            csvYr = 'Mar'
         if 'Spending' in csvfile[0]:
             csvfile[0] = '2014-11'
         if '2015-31-03' in csvfile[0]:
             csvfile[0] = '2015-03-31'
         csvYr = csvfile[0].split('-')[0]
+        if 'Q1' in csvYr:
+            csvYr = '2015'
         if len(csvfile[0].split('-')) == 1:
             csvfile[0] = '2014-10'
         csvMth = csvfile[0].split('-')[1]
+        if '10' in csvMth:
+            csvMth = 'Mar'
+            csvMth = convert_mth_strings(csvMth.upper())
         filename = entity_id + "_" + csvYr + "_" + csvMth
         todays_date = str(datetime.now())
         file_url = url.strip()
