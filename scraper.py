@@ -110,24 +110,26 @@ for pages in itertools.count(2010):
             file_url = link['href']
             if '169' in file_url:
                 continue
-            csvfile = link.text.strip().split('_')
-            if '2010.12.31' in csvfile[0]:
-                csvYr = csvfile[0].split('.')[0]
-                csvMth = csvfile[0].split('.')[1]
-            elif csvfile[0] == 'Spending':
-                csvYr = csvfile[4]
-                csvMth = csvfile[5]
-            elif '-' not in csvfile[0]:
-                csvYr = csvfile[0]
-                csvMth = csvfile[1]
-            elif '-' in csvfile[0]:
-                csvYr = csvfile[0].split('-')[0]
-                csvMth = csvfile[0].split('-')[1]
-            if int(csvMth) > 12:
-                csvMth = csvfile[0].split('-')[-1]
-            if 'Q1' in csvYr:
-                csvYr = csvfile[1]
-                csvMth = csvfile[0]
+            csvfile = link.text.strip()
+            if 'Q' in csvfile:
+                date_q = re.search('(Q\d{1})', csvfile)
+                csvMth = date_q.groups()[0]
+                year_q = re.search('(\d{4})', csvfile)
+                csvYr = None
+                if year_q:
+                    csvYr = year_q.groups()[0]
+                if not csvYr:
+                    csvYr = '2016'
+            else:
+                year_q = re.search('(\d{4})', csvfile)
+                csvYr = None
+                if year_q:
+                    csvYr = year_q.groups()[0]
+                mth = re.search('\d{4}.([0-9]{2})', csvfile)
+                if mth:
+                    csvMth = mth.groups()[0]
+                if '2015-31-03' in csvfile:
+                    csvMth = '03'
             csvMth = convert_mth_strings(csvMth.upper())
             data.append([csvYr, csvMth, file_url])
 
@@ -142,7 +144,7 @@ for row in data:
     valid = validate(filename, file_url)
 
     if valid == True:
-        scraperwiki.sqlite.save(unique_keys=['l'], data={"l": file_url, "f": filename, "d": todays_date })
+        scraperwiki.sqlite.save(unique_keys=['f'], data={"l": file_url, "f": filename, "d": todays_date })
         print filename
     else:
         errors += 1
